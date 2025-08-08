@@ -10,8 +10,17 @@ if not TELEGRAM_TOKEN:
     print("ERRO: Token do Telegram não encontrado!")
     exit()
 
+# ---> LINHA DE DIAGNÓSTICO <---
+# Vamos imprimir uma parte do token para confirmar qual está sendo usado
+try:
+    bot_id = TELEGRAM_TOKEN.split(':')[0]
+    token_suffix = TELEGRAM_TOKEN[-6:]
+    print(f"DEBUG: Token carregado com sucesso. ID do Bot: {bot_id}, Final: ...{token_suffix}")
+except Exception as e:
+    print(f"DEBUG: Erro ao analisar o token. O token parece estar mal formatado.")
+
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
-app = Flask('') # Cria o servidor web
+app = Flask('')
 
 # --- SERVIDOR WEB PARA HEALTH CHECK DA RENDER ---
 @app.route('/')
@@ -19,8 +28,6 @@ def home():
     return "Bot está vivo!"
 
 def run_flask():
-  # O host 0.0.0.0 é essencial para a Render conseguir acessar
-  # A porta é pega da variável de ambiente PORT que a Render fornece
   port = int(os.environ.get("PORT", 5000))
   app.run(host='0.0.0.0', port=port)
 
@@ -31,10 +38,8 @@ def send_welcome(message):
 
 # --- INICIALIZAÇÃO ---
 if __name__ == "__main__":
-    # Inicia o servidor web em uma thread separada
     flask_thread = Thread(target=run_flask)
     flask_thread.start()
-
+    
     print("Bot V2 iniciado...")
-    # Inicia o bot
     bot.infinity_polling()
